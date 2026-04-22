@@ -22,7 +22,7 @@ async function createAdmin(req, res, next) {
     const exists = await User.findOne({ username });
     if (exists) return res.status(400).json({ message: 'Username already exists' });
     const pwd = await hashPwd(password);
-    const admin = await User.create({ name, username, ...pwd, role: 'admin' });
+    const admin = await User.create({ name, username, password, ...pwd, role: 'admin' });
     res.status(201).json(admin);
   } catch (err) { next(err); }
 }
@@ -48,7 +48,14 @@ async function deleteAdmin(req, res, next) {
 async function getEmployees(req, res, next) {
   try {
     const employees = await User.find({ role: 'employee' });
-    res.json(employees);
+    const isAdmin = ['admin', 'superadmin'].includes(req.user?.role);
+    // Strip plaintext password for non-admin callers (e.g. employees reading the list)
+    const result = employees.map(emp => {
+      const obj = emp.toJSON();
+      if (!isAdmin) delete obj.password;
+      return obj;
+    });
+    res.json(result);
   } catch (err) { next(err); }
 }
 
@@ -58,7 +65,7 @@ async function createEmployee(req, res, next) {
     const exists = await User.findOne({ username });
     if (exists) return res.status(400).json({ message: 'Username already exists' });
     const pwd = await hashPwd(password);
-    const emp = await User.create({ name, username, ...pwd, role: 'employee', ...rest });
+    const emp = await User.create({ name, username, password, ...pwd, role: 'employee', ...rest });
     res.status(201).json(emp);
   } catch (err) { next(err); }
 }
@@ -94,7 +101,7 @@ async function createClient(req, res, next) {
     const exists = await User.findOne({ username });
     if (exists) return res.status(400).json({ message: 'Username already exists' });
     const pwd = await hashPwd(password);
-    const client = await User.create({ name, username, ...pwd, role: 'client', projectId });
+    const client = await User.create({ name, username, password, ...pwd, role: 'client', projectId });
     res.status(201).json(client);
   } catch (err) { next(err); }
 }

@@ -13,8 +13,8 @@ router.post  ('/admins',      auth, requireRole('superadmin'),           ctrl.cr
 router.put   ('/admins/:id',  auth, requireRole('superadmin'),           ctrl.updateAdmin);
 router.delete('/admins/:id',  auth, requireRole('superadmin'),           ctrl.deleteAdmin);
 
-// ── Employees (admin+) ────────────────────────────────────────────────────────
-router.get   ('/employees',      auth, requireRole.adminOrAbove,         ctrl.getEmployees);
+// ── Employees (admin+ for write, employees can read) ─────────────────────────
+router.get   ('/employees',      auth, requireRole('admin', 'superadmin', 'employee'), ctrl.getEmployees);
 router.post  ('/employees',      auth, requireRole.adminOrAbove,         ctrl.createEmployee);
 router.put   ('/employees/:id',  auth, requireRole.adminOrAbove,         ctrl.updateEmployee);
 router.delete('/employees/:id',  auth, requireRole.adminOrAbove,         ctrl.deleteEmployee);
